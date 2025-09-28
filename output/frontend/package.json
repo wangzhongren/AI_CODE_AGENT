@@ -1,0 +1,21 @@
+{
+  "name": "knowledge-base-frontend",
+  "version": "1.0.0",
+  "description": "知识库管理系统前端",
+  "main": "src/main.js",
+  "scripts": {
+    "serve": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.4.0",
+    "vue-router": "^4.2.0",
+    "axios": "^1.6.0",
+    "marked": "^11.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.5.0",
+    "vite": "^5.0.0"
+  }
+}

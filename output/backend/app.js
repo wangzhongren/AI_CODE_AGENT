@@ -1,51 +1,46 @@
 const express = require('express');
-const helmet = require('helmet');
-const cors = require('cors');
 const path = require('path');
+const articlesRouter = require('./routes/articles');
+const authRouter = require('./routes/auth');
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-// 安全中间件
-app.use(helmet());
-app.use(cors());
-
-// 解析JSON
-app.use(express.json({ limit: '10mb' }));
+// Middleware
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 静态文件服务 - 指向 public 目录
-app.use(express.static(path.join(__dirname, '../public')));
+// Static file serving - serve files from public directory
+app.use(express.static('public'));
 
-// API路由
-app.use('/api/v1/items', require('./routes/items'));
-app.use('/api/v1/comments', require('./routes/comments'));
-app.use('/api/v1/share', require('./routes/share'));
+// API routes
+app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/articles', articlesRouter);
 
-// 健康检查
+// Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ success: true, message: 'Server is running' });
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// 404处理
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    success: false,
+    message: 'Something went wrong!'
+  });
+});
+
+// 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
-    message: 'API endpoint not found'
+    message: 'Route not found'
   });
 });
 
-// 错误处理中间件
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({
-    success: false,
-    message: '服务器内部错误'
-  });
-});
-
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
 
 module.exports = app;

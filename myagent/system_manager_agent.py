@@ -138,7 +138,7 @@ class SystemManagerAgent(BaseAgent):
             message = decision.replace("modify_fe:", "").strip()
             print(f"🔧 管理者调度前端程序员修改: {message}")
             # 获取API规范用于前端修改
-            api_spec = getattr(self.agents['be'], 'api_spec', {})
+            api_spec = None;
             if not api_spec:
                 api_spec_path = os.path.join("output", "api_spec.json")
                 if os.path.exists(api_spec_path):
@@ -286,3 +286,9 @@ class SystemManagerAgent(BaseAgent):
         print("  - frontend_guide.json: 前端开发指导")
         print("  - backend_guide.json: 后端开发指导")
         print("  - 其他相关文件...")
+# http://localhost:5173/api/v1/auth/register 404了
+
+"""
+
+
+"""

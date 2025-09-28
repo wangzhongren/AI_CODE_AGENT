@@ -1,79 +1,72 @@
-# 前端开发指导文档（Vue + Node.js + SQLite）
+# 前端开发指导文档
 
 ## 项目概述
-基于Vue构建前端界面，实现内容展示、公开分享、用户评论等核心功能。前端通过API与Node.js后端交互，数据存储于SQLite数据库。
+根据PRD要求，开发一个知识库管理系统，包含文章列表、文章详情、文章创建/编辑功能。
 
 ## 页面结构与文件规划
+
+### 项目框架选择
+考虑到项目包含多个交互页面和表单操作，建议使用Vue框架开发。
 
 ### 目录结构
 ```
 frontend/
-├── public/                 # 静态资源（Vue CLI构建后）
-│   ├── index.html
-│   └── ...
+├── public/
+│   └── index.html
 ├── src/
-│   ├── components/         # 通用组件
-│   │   ├── CommentForm.vue
-│   │   ├── CommentList.vue
-│   │   └── ShareButton.vue
-│   ├── views/             # 页面组件
-│   │   ├── Home.vue       # 首页/列表页
-│   │   ├── Detail.vue     # 详情页（含评论）
-│   │   └── ShareView.vue  # 公开分享页
-│   ├── api/               # API调用封装
-│   │   └── api.js
-│   ├── router/            # 路由配置
+│   ├── components/
+│   │   ├── ArticleCard.vue
+│   │   ├── ArticleForm.vue
+│   │   └── Pagination.vue
+│   ├── views/
+│   │   ├── ArticleList.vue
+│   │   ├── ArticleDetail.vue
+│   │   └── ArticleCreate.vue
+│   ├── router/
 │   │   └── index.js
+│   ├── api/
+│   │   └── api.js
+│   ├── App.vue
 │   └── main.js
-├── package.json
-└── vue.config.js          # 配置代理解决开发环境跨域
+└── package.json
 ```
 
-### 核心页面说明
+### 页面功能说明
 
-1. **首页/列表页 (Home.vue)**
-   - 功能：展示内容列表，支持分页
-   - 调用接口：`GET /api/v1/items?page=1&limit=10`
+#### 1. 文章列表页 (ArticleList.vue)
+- **功能**: 展示所有文章的标题、摘要、创建时间
+- **接口调用**: GET /api/v1/articles?page=1&limit=10
+- **交互**: 点击文章标题跳转到详情页，支持分页
 
-2. **详情页 (Detail.vue)**
-   - 功能：展示单个内容详情及评论列表，提供评论表单
-   - 调用接口：
-     - `GET /api/v1/items/:id` - 获取详情
-     - `GET /api/v1/comments?item_id=:id&page=1&limit=10` - 获取评论
-     - `POST /api/v1/comments` - 提交评论
+#### 2. 文章详情页 (ArticleDetail.vue)
+- **功能**: 展示文章完整内容（Markdown格式渲染）
+- **接口调用**: GET /api/v1/articles/:id
+- **交互**: 支持返回列表页，编辑按钮跳转到编辑页
 
-3. **公开分享页 (ShareView.vue)**
-   - 功能：通过唯一分享链接访问内容（无需登录）
-   - 调用接口：`GET /api/v1/shared/:share_token`
+#### 3. 文章创建/编辑页 (ArticleCreate.vue)
+- **功能**: 创建新文章或编辑现有文章
+- **接口调用**: 
+  - POST /api/v1/articles (创建)
+  - PUT /api/v1/articles/:id (编辑)
+- **表单字段**: title (string), content (markdown string)
 
-## API调用约定
+## 路由配置
+```javascript
+// src/router/index.js
+const routes = [
+  { path: '/', component: ArticleList },
+  { path: '/articles/:id', component: ArticleDetail },
+  { path: '/create', component: ArticleCreate },
+  { path: '/edit/:id', component: ArticleCreate }
+]
+```
 
-- **基础路径**: `/api/v1`
-- **开发环境代理**: 在 `vue.config.js` 中配置
-  ```js
-  module.exports = {
-    devServer: {
-      proxy: {
-        '/api': {
-          target: 'http://localhost:3000',
-          changeOrigin: true
-        }
-      }
-    }
-  }
-  ```
+## API 调用规范
+- 基础URL: `/api/v1`
+- 使用 axios 进行HTTP请求
+- 请求头包含: `Content-Type: application/json`
+- 认证: JWT token 在 Authorization header 中
 
-## 安全边界实现
-
-- **评论功能**:
-  - 前端对评论内容进行长度限制（≤500字符）
-  - 提交时自动附加时间戳，防止重复提交
-- **分享功能**:
-  - 分享链接包含唯一token，前端通过token获取内容
-  - 分享页不显示敏感操作按钮
-
-## 构建与部署
-
-- 开发命令: `npm run serve`
-- 构建命令: `npm run build` (输出到 `dist/` 目录)
-- 生产环境: 后端需托管 `dist/` 目录下的静态文件
+## 构建输出
+- 开发环境: `npm run serve`
+- 生产构建: `npm run build` (输出到 frontend/dist/ 目录)

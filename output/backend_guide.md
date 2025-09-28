@@ -1,115 +1,111 @@
-# 后端开发指导文档（Node.js + SQLite）
+# 后端开发指导文档
 
 ## 技术栈
-- Web框架: Express.js
-- 数据库: SQLite (使用sqlite3或better-sqlite3)
-- 安全: Helmet, CORS, 输入验证
+- Node.js + Express
+- MySQL 数据库
+- JWT 认证
 
 ## 数据库设计
 
-### 表结构
-
+### 建表脚本
 ```sql
--- 内容表
-CREATE TABLE items (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  title TEXT NOT NULL,
-  content TEXT NOT NULL,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+CREATE DATABASE knowledge_base;
+USE knowledge_base;
 
--- 评论表
-CREATE TABLE comments (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  item_id INTEGER NOT NULL,
-  author_name TEXT NOT NULL,
-  content TEXT NOT NULL CHECK(length(content) <= 500),
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
-);
-
--- 分享令牌表
-CREATE TABLE share_tokens (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  item_id INTEGER NOT NULL UNIQUE,
-  token TEXT NOT NULL UNIQUE,
-  expires_at DATETIME,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
+CREATE TABLE articles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 ```
 
-## API接口设计
+## API 设计
 
-### 基础约定
-- **基础路径**: `/api/v1`
-- **分页参数**: `page` (默认1), `limit` (默认10, 最大50)
-- **响应格式**:
-  ```json
-  {
-    "success": true,
-    "data": { ... },
-    "message": "操作成功"
+### 基础配置
+- API 前缀: `/api/v1`
+- 端口: 3000
+- 静态文件服务: `express.static(path.join(__dirname, '../frontend/dist'))`
+
+### 接口详情
+
+#### 1. 获取文章列表
+- **路径**: GET /api/v1/articles
+- **参数**: 
+  - page (可选, 默认1)
+  - limit (可选, 默认10)
+- **响应**:
+```json
+{
+  "success": true,
+  "data": {
+    "articles": [
+      {
+        "id": 1,
+        "title": "文章标题",
+        "content": "文章内容摘要...",
+        "created_at": "2024-01-01T00:00:00Z"
+      }
+    ],
+    "pagination": {
+      "current_page": 1,
+      "total_pages": 5,
+      "total_items": 50
+    }
   }
-  ```
+}
+```
 
-### 接口列表
+#### 2. 获取文章详情
+- **路径**: GET /api/v1/articles/:id
+- **响应**:
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "title": "完整文章标题",
+    "content": "完整的Markdown内容",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
 
-1. **内容管理**
-   - `GET /api/v1/items` - 获取内容列表（分页）
-   - `GET /api/v1/items/:id` - 获取内容详情
-   - `POST /api/v1/items` - 创建新内容
+#### 3. 创建文章
+- **路径**: POST /api/v1/articles
+- **请求体**:
+```json
+{
+  "title": "新文章标题",
+  "content": "Markdown格式的内容"
+}
+```
+- **响应**: 同文章详情格式
 
-2. **评论功能**
-   - `GET /api/v1/comments` - 获取评论列表（需item_id参数）
-   - `POST /api/v1/comments` - 创建评论
-     - 参数: `{ item_id, author_name, content }`
+#### 4. 更新文章
+- **路径**: PUT /api/v1/articles/:id
+- **请求体**: 同创建文章
+- **响应**: 同文章详情格式
 
-3. **分享功能**
-   - `POST /api/v1/share` - 生成分享链接
-     - 参数: `{ item_id }`
-     - 返回: `{ token: "unique_token_string" }`
-   - `GET /api/v1/shared/:token` - 通过token获取内容
-
-## 安全边界实现
-
-- **输入验证**:
-  - 所有POST/PUT请求验证参数类型和长度
-  - 评论内容限制500字符
-- **分享安全**:
-  - 每个内容仅生成一个有效token
-  - token使用高强度随机字符串（32位以上）
-  - 可选设置过期时间（默认7天）
-- **防滥用**:
-  - 评论接口添加基础频率限制（如10秒/次）
-
-## 目录结构
-
+## 项目结构
 ```
 backend/
-├── app.js                 # 应用入口
+├── app.js
 ├── routes/
-│   ├── items.js           # 内容路由
-│   ├── comments.js        # 评论路由
-│   └── share.js           # 分享路由
-├── controllers/           # 业务逻辑
-├── models/                # 数据库操作
-│   └── db.js              # SQLite连接
-├── middleware/            # 中间件（验证、日志等）
-└── public/                # 静态文件（生产环境指向frontend/dist）
+│   └── articles.js
+├── controllers/
+│   └── articlesController.js
+├── models/
+│   └── Article.js
+├── middleware/
+│   └── auth.js
+└── config/
+    └── database.js
 ```
 
-## 静态文件服务
-
-生产环境需托管Vue构建后的文件：
-```js
-// app.js
-const path = require('path');
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
-```
-
-## 开发与部署
-
-- 开发命令: `npm run dev` (使用nodemon)
-- 生产构建: 确保先构建前端 `cd frontend && npm run build`
+## 认证机制
+- 使用 JWT token
+- Authorization header 格式: `Bearer <token>`
+- token 有效期: 24小时

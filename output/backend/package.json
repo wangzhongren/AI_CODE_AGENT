@@ -1,27 +1,22 @@
 {
-  "name": "content-management-backend",
+  "name": "knowledge-base-backend",
   "version": "1.0.0",
-  "description": "Content management system backend with Node.js, Express, and SQLite",
+  "description": "Backend service for knowledge base application",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js"
   },
   "dependencies": {
-    "cors": "^2.8.5",
     "express": "^4.18.2",
-    "helmet": "^7.0.0",
-    "sqlite3": "^5.1.6"
+    "mysql2": "^3.6.0",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
   },
-  "keywords": [
-    "nodejs",
-    "express",
-    "sqlite",
-    "content-management"
-  ],
-  "author": "Developer",
-  "license": "MIT"
+  "engines": {
+    "node": ">=16.0.0"
+  }
 }

@@ -1,121 +1,103 @@
 # 前后端对接文档
 
-## 环境配置
+## 基础约定
+
+### API 基础路径
+- 开发环境: `http://localhost:3000/api/v1`
+- 生产环境: `/api/v1` (同域)
+
+### 跨域配置
+后端需配置CORS:
+```javascript
+app.use(cors({
+  origin: ['http://localhost:8080'], // 开发环境
+  credentials: true
+}));
+```
+
+### 数据格式
+- **请求格式**: `application/json`
+- **响应格式**: 
+```json
+{
+  "success": true,
+  "data": {},
+  "message": ""
+}
+```
+- **错误格式**:
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "错误描述"
+  }
+}
+```
+
+### Markdown 传输
+- 前端发送原始Markdown字符串
+- 后端存储原始Markdown
+- 前端接收后使用 markdown-it 等库渲染
+
+## 接口调用示例
+
+### 获取文章列表
+```javascript
+// frontend/src/api/api.js
+export const getArticles = (page = 1, limit = 10) => {
+  return axios.get(`/api/v1/articles`, {
+    params: { page, limit }
+  });
+};
+```
+
+### 创建文章
+```javascript
+export const createArticle = (articleData) => {
+  return axios.post('/api/v1/articles', articleData);
+};
+```
+
+## Mock 数据示例
+
+### 文章列表响应
+```json
+{
+  "success": true,
+  "data": {
+    "articles": [
+      {
+        "id": 1,
+        "title": "Vue 3 入门指南",
+        "content": "Vue 3 是 Vue.js 的最新版本...",
+        "created_at": "2024-01-15T10:30:00Z"
+      }
+    ],
+    "pagination": {
+      "current_page": 1,
+      "total_pages": 1,
+      "total_items": 1
+    }
+  }
+}
+```
+
+## 联调方式
 
 ### 开发环境
-- **前端**: `http://localhost:8080` (Vue Dev Server)
-- **后端**: `http://localhost:3000` (Express)
-- **跨域处理**: 前端vue.config.js已配置代理，所有`/api`请求转发到后端
+1. 后端启动: `cd backend && npm start` (端口3000)
+2. 前端启动: `cd frontend && npm run serve` (端口8080)
+3. 前端通过代理访问后端API
 
 ### 生产环境
-- **统一域名**: 前后端部署在同一域名下
-- **静态文件**: 后端直接提供`frontend/dist/`目录下的文件
-- **API路径**: 保持`/api/v1`前缀
+1. 前端构建: `cd frontend && npm run build`
+2. 后端配置静态文件服务指向 `frontend/dist/`
+3. 启动后端服务，前端页面通过根路径访问
 
-## 关键接口对接示例
-
-### 1. 获取内容列表
-```js
-// 前端调用 (src/api/api.js)
-export const fetchItems = (page = 1, limit = 10) => {
-  return axios.get(`/api/v1/items`, { params: { page, limit } });
-};
-
-// 后端响应示例
-{
-  "success": true,
-  "data": {
-    "items": [
-      { "id": 1, "title": "示例内容", "content": "..." }
-    ],
-    "pagination": { "page": 1, "limit": 10, "total": 1 }
-  }
-}
-```
-
-### 2. 提交评论
-```js
-// 前端调用
-export const createComment = (commentData) => {
-  return axios.post(`/api/v1/comments`, commentData);
-};
-
-// 后端验证
-// - item_id: 必须存在且关联有效内容
-// - author_name: 1-50字符
-// - content: 1-500字符
-```
-
-### 3. 公开分享
-```js
-// 前端生成分享链接
-const shareUrl = `${window.location.origin}/share/${token}`;
-
-// 后端验证token有效性
-// - 检查token是否存在
-// - 检查是否过期（如有设置）
-```
-
-## Mock数据示例
-
-### 内容列表
-```json
-{
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "id": 1,
-        "title": "项目计划书",
-        "content": "详细项目规划...",
-        "created_at": "2023-08-01T10:00:00Z"
-      }
-    ],
-    "pagination": {
-      "page": 1,
-      "limit": 10,
-      "total": 1
-    }
-  }
-}
-```
-
-### 评论列表
-```json
-{
-  "success": true,
-  "data": {
-    "comments": [
-      {
-        "id": 1,
-        "author_name": "张三",
-        "content": "很好的计划！",
-        "created_at": "2023-08-02T14:30:00Z"
-      }
-    ],
-    "pagination": {
-      "page": 1,
-      "limit": 10,
-      "total": 1
-    }
-  }
-}
-```
-
-## 联调注意事项
-
-1. **数据库初始化**: 后端启动时需确保SQLite数据库和表结构已创建
-2. **CORS配置**: 开发环境后端需允许前端域名跨域
-   ```js
-   // 后端app.js
-   app.use(cors({ origin: 'http://localhost:8080' }));
-   ```
-3. **错误处理**: 前端需处理后端返回的错误状态码（4xx/5xx）
-4. **分享链接测试**: 确保分享页能独立访问且不依赖用户登录状态
-
-## 安全测试要点
-
-- [ ] 评论内容XSS防护（后端应转义或前端渲染时处理）
-- [ ] 分享token不可预测性（使用crypto随机生成）
-- [ ] 评论频率限制（防止刷评论）
-- [ ] SQL注入防护（使用参数化查询）
+## 目录结构约定
+- 前端项目: `frontend/` 目录
+- 后端项目: `backend/` 目录
+- 构建产物: `frontend/dist/` 目录
+- 后端静态服务: 指向 `../frontend/dist`

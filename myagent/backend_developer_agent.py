@@ -37,7 +37,6 @@ class BackendDeveloperAgent(BaseAgent):
         self.output_dir = "output"
     def todo(self, token: str):
         try:
-            is_need_loop = [False];
             # is_need_loop[0] = False;
             need_data = [];
             print(f"🔍 收到后端开发响应，长度: {len(token)} 字符")
@@ -45,20 +44,20 @@ class BackendDeveloperAgent(BaseAgent):
             if FileOperationHandler.has_file_operations(token):
                 print("✅ 检测到文件操作指令")
                 def callback(op,result):
-                    is_need_loop[0] = True;
                     need_data.append(result);
                 result = fo.handle_tagged_file_operations(token,callback);
+                self.chat(json.dumps(need_data,ensure_ascii=False))
                 if result:
                     # 处理完文件操作后，确保 api_spec.json 已生成
                     self.ensure_api_spec_file()
                     return
+                
             else:
                 print("⚠️  未检测到文件操作指令")
                 # 即使没有文件操作指令，也尝试查找API规范
                 self.extract_api_spec_from_response(token)
             # print(f"📝 后端程序员回复: {token}")
-            if is_need_loop[0]:
-                self.chat(json.dumps(need_data,ensure_ascii=False))
+                
             # 如果没有文件操作指令，当作普通文本处理
             
         except Exception as e:
