@@ -1,26 +1,26 @@
-# 智能项目开发系统
+# Intelligent Project Development System
 
-一个基于AI代理的自动化项目开发系统，通过多个专业角色的AI代理协作完成项目开发任务。
+An AI-agent-based automated project development system that leverages collaborative AI agents with specialized roles to complete software development tasks.
 
-## 系统架构
+## System Architecture
 
-- **Product Manager Agent**: 产品管理代理，负责制定产品需求文档(PRD)
-- **Project Manager Agent**: 项目管理代理，负责制定开发指南和项目计划
-- **Frontend Developer Agent**: 前端开发代理，负责前端应用的开发和实现
-- **Backend Developer Agent**: 后端开发代理，负责后端服务的开发和实现
-- **System Manager Agent**: 系统管理代理，负责协调各个代理和整体项目流程
+- **Product Manager Agent**: Responsible for generating the Product Requirements Document (PRD).  
+- **Project Manager Agent**: Responsible for creating development guidelines and project plans.  
+- **Frontend Developer Agent**: Responsible for developing and implementing the frontend application.  
+- **Backend Developer Agent**: Responsible for developing and implementing the backend service.  
+- **System Manager Agent**: Coordinates all agents and manages the overall project workflow.
 
-## 技术栈
+## Technology Stack
 
-- Python 3.10+
-- OpenAI LLM接口
-- 自定义AI代理工厂框架
-- Python-dotenv (环境变量管理)
+- Python 3.10+  
+- OpenAI LLM API  
+- Custom AI Agent Factory Framework  
+- Python-dotenv (environment variable management)
 
-## 环境配置
+## Environment Configuration
 
-1. 复制 `.env.example` 文件并重命名为 `.env`
-2. 在 `.env` 文件中配置以下环境变量：
+1. Copy the `.env.example` file and rename it to `.env`.  
+2. Configure the following environment variables in `.env`:
 
 ```bash
 api_key=your_openai_api_key
@@ -28,47 +28,48 @@ model_name=your_model_name
 base_url=your_base_url
 ```
 
-## 运行系统
+## Running the System
 
 ```bash
 python enhanced_main.py
 ```
 
-## 使用说明
+## Usage Instructions
 
-1. **初始阶段**：输入您的项目需求，系统将自动完成开发
-2. **开发完成后**：可以输入修改需求以更新项目
-3. **系统命令**：
-   - `status` - 查看当前项目状态
-   - `next` - 执行下一步开发
-   - `quit` - 退出系统
+1. **Initial Stage**: Enter your project requirements — the system will automatically generate and develop the full project.  
+2. **Post-Development**: Input updated requirements to modify and iterate on the existing project.  
+3. **System Commands**:
+   - `status` — View the current project status  
+   - `next` — Execute the next development step  
+   - `quit` — Exit the system
 
-## 功能特点
+## Key Features
 
-- 自动化项目开发流程
-- 多代理协作模式
-- 智能状态管理
-- 支持需求变更和迭代开发
-- 错误处理和异常恢复
+- Fully automated project development workflow  
+- Multi-agent collaborative architecture  
+- Intelligent state tracking and management  
+- Support for iterative development and requirement changes  
+- Built-in error handling and recovery mechanisms
 
-## 项目状态跟踪
+## Project Status Tracking
 
-系统会自动跟踪以下开发阶段：
-- PRD (产品需求文档) 完成状态
-- 开发指南完成状态
-- 后端开发完成状态
-- 前端开发完成状态
+The system automatically tracks the following development milestones:
+- PRD (Product Requirements Document) completed  
+- Development guidelines completed  
+- Backend development completed  
+- Frontend development completed
 
-## 开发流程
+## Development Workflow
 
-1. 用户提供需求
-2. 产品经理代理生成PRD
-3. 项目经理代理制定开发指南
-4. 前后端开发代理并行开发
-5. 系统协调并整合各部分工作
+1. User submits project requirements.  
+2. Product Manager Agent generates the PRD.  
+3. Project Manager Agent creates detailed development guidelines.  
+4. Frontend and Backend Developer Agents develop in parallel.  
+5. System Manager Agent coordinates integration and ensures alignment.
 
-## 注意事项
+## Notes
 
-- 需要有效的OpenAI API密钥
-- 确保网络连接以调用LLM服务
-- 系统会根据项目完成状态自动切换到修改模式
+- An active OpenAI API key is required.  
+- A stable internet connection is necessary to access LLM services.  
+- The system automatically switches to modification mode once initial development is complete.
+
