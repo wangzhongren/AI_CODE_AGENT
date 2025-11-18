@@ -3,9 +3,11 @@ import re
 import os
 from ai_agent_factory.agent.baseagent import BaseAgent
 from ai_agent_factory.utils.file_operation_handler import FileOperationHandler
-fo = FileOperationHandler()
+# fo = FileOperationHandler()
 class ProjectManagerAgent(BaseAgent):
     def __init__(self, basellm):
+        fo = FileOperationHandler(llm=basellm)
+        self.fo = fo;
         system_prompt = (
             "你是一位经验丰富的项目经理，负责协调前后端开发工作。\n"
             "你需要根据产品经理提供的 PRD 文档，生成三个关键文档：\n"
@@ -84,7 +86,7 @@ class ProjectManagerAgent(BaseAgent):
             if FileOperationHandler.has_file_operations(token):
                 is_need_loop = True;
                 print("✅ 检测到文件操作指令")
-                if fo.handle_tagged_file_operations(token,callback):
+                if self.fo.handle_tagged_file_operations(token,callback):
                     # 处理完文件操作后，确保加载相关文档
                     self.load_guides_from_files()
                     return

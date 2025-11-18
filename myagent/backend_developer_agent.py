@@ -4,10 +4,12 @@ import os
 from ai_agent_factory.agent.baseagent import BaseAgent
 from ai_agent_factory.llms.base_llm_openai import OpenAILLM
 from ai_agent_factory.utils.file_operation_handler import FileOperationHandler
-fo = FileOperationHandler()
+
 class BackendDeveloperAgent(BaseAgent):
 
     def __init__(self, basellm):
+        fo = FileOperationHandler(llm=basellm)
+        self.fo  = fo;
         system_prompt = (
             "你是一位专业的全栈后端程序员兼数据库工程师，精通 Node.js、Express 框架和数据库设计。\n"
             "你需要根据项目经理提供的指导，完成完整的后端开发工作。\n"
@@ -45,7 +47,7 @@ class BackendDeveloperAgent(BaseAgent):
                 print("✅ 检测到文件操作指令")
                 def callback(op,result):
                     need_data.append(result);
-                result = fo.handle_tagged_file_operations(token,callback);
+                result = self.fo.handle_tagged_file_operations(token,callback);
                 self.chat(json.dumps(need_data,ensure_ascii=False))
                 if result:
                     # 处理完文件操作后，确保 api_spec.json 已生成

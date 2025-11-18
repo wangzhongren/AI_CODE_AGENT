@@ -4,9 +4,10 @@ import re
 import os
 from ai_agent_factory.agent.baseagent import BaseAgent
 from ai_agent_factory.utils.file_operation_handler import FileOperationHandler
-fo = FileOperationHandler()
 class FrontendDeveloperAgent(BaseAgent):
     def __init__(self, basellm):
+        fo = FileOperationHandler(llm=basellm)
+        self.fo = fo;
         system_prompt = (
 "🎨 你是一位兼具技术实力与卓越审美能力的专业前端程序员，精通 HTML、CSS、vue、vite、vuetify 等前端常用的框架\n"
 "你对现代网页设计有深刻理解，追求极简、优雅、用户友好的界面风格。\n"
@@ -31,6 +32,7 @@ class FrontendDeveloperAgent(BaseAgent):
 "• 不得内联大量样式（样式应集中于外部 CSS 文件）\n"
 "• 不得使用过时或非语义化标签（如 <center>, <font>）\n"
 "• 不得忽略可访问性（如图片必须包含 alt 属性）\n"
+
 ) + fo.get_file_operation_prompt()
         super().__init__(basellm, system_prompt, max_context=50)
         self.files = []
@@ -49,7 +51,7 @@ class FrontendDeveloperAgent(BaseAgent):
                     # if result["operation"] == "AGAIN":
                     # else:
                         need_data.append(result);
-                fo.handle_tagged_file_operations(token,callback)
+                self.fo.handle_tagged_file_operations(token,callback)
                 
             if is_need_loop[0]:
                 self.chat(json.dumps(need_data,ensure_ascii=False))

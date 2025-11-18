@@ -69,6 +69,7 @@ class SystemManagerAgent(BaseAgent):
             self.agents['pm'].chat(message)
         elif "ask_pj" in decision:
             message = decision.replace("ask_pj:", "").strip()
+            message +="产品文档：" + self.agents["pm"].prd;
             print(f"📋 管理者调度项目经理: {message}")
             self.agents['pj'].chat(message)
         elif "ask_fe" in decision:
