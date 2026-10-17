@@ -30,6 +30,7 @@
 - 2026-10-17（R1）：PyInstaller onefile 会起**父、子两个同名进程**。用 `Start-Process -PassThru` 拿到的 PID 可能先退出；冒烟/清理必须按进程名（`Get-Process -Name 'AI-Code-Agent*'`）判断与结束，否则会留下后台进程。
 - 2026-10-17（R1）：macOS `.app` 的可执行文件在 `Contents/MacOS/`，按 `dirname(sys.executable)` 规则 `.env` 要放 `Contents/MacOS/.env`，不是 `.app` 同级。本地无法验证 macOS 构建。
 - 2026-10-17（R1）：本机为验证 YAML 装了 **PyYAML 6.0.3**（仅开发期，不在任何 requirements 里）。`dist/` **尚未被 `.gitignore` 忽略**，且 `.gitignore` 不属本角色，需项目管理角色处理。
+- 2026-10-17（FIX）：**Windows CI 控制台编码坑**。Windows runner 的默认控制台编码不是 UTF-8（英文系统约 cp1252），打包脚本 `print` 中文会抛 `UnicodeEncodeError`，进程退出码变 1，CI 会把它误报成「版本校验失败」。v1.0.0 的 `39008017545` 就是这样：`build-windows` 失败、`build-macos` 通过、`release` 跳过。本机 cp936 能编码中文所以看不出来。复现命令：`PYTHONIOENCODING=cp1252 .venv/Scripts/python.exe packaging/check_version.py v1.0.0`。已修：打包脚本入口调用 `build_common.ensure_utf8_console()`，workflow 两个 build job 再加 `PYTHONIOENCODING: "utf-8"`。新增打包脚本时记得在 `main()` 第一行调用。
 
 ## 容易踩坑的位置
 
@@ -38,6 +39,7 @@
 - **初始/变更判断有两处**：入口自己一份（`enhanced_main.py` 的关键词判断），编排器 `project_state` 一份。改一处要考虑另一处。
 - **不要穿透 `_BaseAgent__context`**。这是平台框架角色的私有字段。要拿回复文本应向那个角色申请公开方法。
 - `.env` 被 `.gitignore` 忽略，仓库里没有，所以本地跑之前必须先自己建。
+- **本地能打印中文 ≠ CI 能打印中文**。本机 cp936 能编码中文，Windows runner 不能。打包脚本新增中文输出时，先用 `PYTHONIOENCODING=cp1252` 跑一遍；入口必须调用 `ensure_utf8_console()`。
 
 ## 待核实的问题
 

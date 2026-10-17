@@ -23,6 +23,7 @@ import build_common
 
 
 def main():
+    build_common.ensure_utf8_console()
     if sys.platform != "darwin":
         print("[打包] build_macos.py 只能在 macOS 上运行；当前平台：" + sys.platform)
         print("[打包] PyInstaller 不支持交叉编译：macOS 产物必须由 macOS 机器或 CI 产出。")

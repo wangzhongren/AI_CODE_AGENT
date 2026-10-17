@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import sys
 
-from build_common import read_desktop_version
+from build_common import ensure_utf8_console, read_desktop_version
 
 
 def normalize_tag(tag):
@@ -23,6 +23,7 @@ def normalize_tag(tag):
 
 
 def main(arguments):
+    ensure_utf8_console()
     if len(arguments) != 1:
         print("用法：python packaging/check_version.py <tag，例如 v1.0.0>")
         return 2

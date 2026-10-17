@@ -1,9 +1,10 @@
 # API 与装配说明：装配（assembly）
 
 - 日期：2026-10-17
-- 本次范围：发行打包与 CI 发布（R1）
+- 本次范围：发行打包与 CI 发布（R1）；Windows CI 控制台编码修复（FIX）
 - 设计：`docs/design/2026-10-17_design_release-packaging-ci.md`
 - 变更记录：`docs/change/2026-10-17_change_release-packaging-ci.md`
+- 修复记录：`docs/fix/2026-10-17_fix_windows-console-encoding.md`
 
 本文件记录本角色对外可调用的入口、依赖方向、契约符合性与验证证据。
 
@@ -39,6 +40,7 @@
 | `ARTIFACT_BASE_NAME` | `"AI-Code-Agent"` |
 | `VERSION_ENVIRONMENT_VARIABLE` | `"AI_CODE_AGENT_VERSION"` |
 | `PROJECT_ROOT` / `DIST_DIRECTORY` / `WORK_DIRECTORY` | 项目根、`dist/`、`temp/assembly/pyinstaller-work/` |
+| `ensure_utf8_console()` | 把 `sys.stdout` / `sys.stderr` 切到 UTF-8（`errors="replace"`），保证中文在非 UTF-8 控制台可打印；三个脚本入口第一行调用 |
 | `read_desktop_version()` | 用 `ast` 从 `desktop/__init__.py` 读 `__version__` |
 | `resolve_version()` | 环境变量优先（去掉开头 `v`），否则读 `desktop.__version__` |
 | `ensure_pyinstaller()` | 缺 PyInstaller 时给可读提示并退出 |
@@ -81,8 +83,8 @@
 | --- | --- |
 | 触发 | `push` tag `v*` |
 | 顶层权限 | `contents: read` |
-| `build-windows` | `windows-latest`，Python 3.12，装运行时与构建期依赖，版本校验，构建，上传 artifact |
-| `build-macos` | `macos-latest`，同上 |
+| `build-windows` | `windows-latest`，`env: PYTHONIOENCODING=utf-8`，Python 3.12，装运行时与构建期依赖，版本校验，构建，上传 artifact |
+| `build-macos` | `macos-latest`，`env: PYTHONIOENCODING=utf-8`，同上 |
 | `release` | `ubuntu-latest`，`needs` 前两个 job，`permissions: contents: write`，下载全部 artifact，检查数量为 3，`gh release create --verify-tag --generate-notes` |
 | 凭证 | `GH_TOKEN: ${{ github.token }}`，不引用任何 `secrets.*` |
 | 版本校验 | 两个构建 job 都执行 `python packaging/check_version.py "${{ github.ref_name }}"` |
@@ -114,12 +116,16 @@
 | --- | --- | --- |
 | 版本校验一致 | `python packaging/check_version.py v1.0.0` | 退出码 0 |
 | 版本校验不一致 | `python packaging/check_version.py v1.0.1` | 退出码 1，打印可读原因 |
+| 非 UTF-8 控制台（一致） | `PYTHONIOENCODING=cp1252 python packaging/check_version.py v1.0.0` | 退出码 0，中文可读（FIX 前退出码 1） |
+| 非 UTF-8 控制台（不一致） | `PYTHONIOENCODING=cp1252 python packaging/check_version.py v1.0.1` | 退出码 1，打印可读的不一致说明 |
 | Windows 构建 | `.venv\Scripts\python.exe packaging\build_windows.py` | 退出码 0，两份产物生成 |
+| Windows 构建（cp1252） | `PYTHONIOENCODING=cp1252 ... packaging\build_windows.py` | 退出码 0，中文可读，日志无 `UnicodeEncodeError` |
+| macOS 脚本（cp1252） | `PYTHONIOENCODING=cp1252 ... packaging\build_macos.py` | 退出码 2（平台守卫），中文可读 |
 | 目录版冒烟（有/无 `.env`） | 终端与 `Start-Process` | 有 `.env` 存活 12 秒；无 `.env` 退出码 2；无残留 |
 | 单文件版冒烟（有/无 `.env`） | `Start-Process` + 按进程名清理 | 有 `.env` 15 秒后父/子两进程存活；无 `.env` 退出码 2；残留 0 |
 | Python 语法 | `python -m py_compile ...` | 通过 |
 | spec 语法 | `compile()` | 通过 |
 | workflow YAML | PyYAML 6.0.3 `safe_load` | 通过，结构与权限符合设计 |
-| 打包自检 | `python test/assembly/check_packaging.py` | 17 项全部通过 |
+| 打包自检 | `python test/assembly/check_packaging.py` | 21 项全部通过（新增 4 项编码回归） |
 | 桌面入口自检 | `python test/assembly/check_desktop_main.py` | 全部通过（无回归） |
 | PySide6 自检 | `python test/assembly/check_pyside6_install.py` | 通过 |

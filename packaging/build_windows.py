@@ -22,6 +22,7 @@ import build_common
 
 
 def main():
+    build_common.ensure_utf8_console()
     if sys.platform != "win32":
         print("[打包] build_windows.py 只能在 Windows 上运行；当前平台：" + sys.platform)
         return 2

@@ -2,6 +2,16 @@
 
 按时间倒序。改动的前因后果、证据与契约偏差见 `docs/change/` 下的对应记录。
 
+## 2026-10-17 — FIX：Windows CI 控制台编码导致版本校验误判失败
+
+- 现象：v1.0.0 的 Actions 运行 `39008017545` 中 `build-windows` 在 `Verify tag matches desktop.__version__` 失败，`build-macos` 成功，`release` 跳过。真实原因不是版本不一致，而是 `print` 中文在非 UTF-8 控制台抛 `UnicodeEncodeError`、退出码变 1。
+- 修复：`packaging/build_common.py` 新增 `ensure_utf8_console()`（`sys.stdout` / `sys.stderr` 的 `reconfigure(encoding="utf-8", errors="replace")`）；`check_version.py`、`build_windows.py`、`build_macos.py` 在 `main()` 开头、任何中文输出之前调用。
+- 第二层保障：`.github/workflows/release.yml` 两个 build job 增加 `env: PYTHONIOENCODING: "utf-8"`。
+- 回归测试：`test/assembly/check_packaging.py` 新增 4 项（自检从 17 项增至 21 项），用 `PYTHONIOENCODING=cp1252` 子进程固化该场景。
+- 本机实测：`PYTHONIOENCODING=cp1252` 下完整跑通 `build_windows.py`（退出码 0，两份产物生成，日志无 `UnicodeEncodeError`）；`build_macos.py` 平台守卫分支中文可读、退出码 2。
+- 未改动：脚本输出语言（仍为中文）、产物命名、退出码语义、`desktop/` 与依赖清单。
+- 记录：`角色卡/assembly/docs/fix/2026-10-17_fix_windows-console-encoding.md`
+
 ## 2026-10-17 — R1：Windows / macOS 发行打包与 CI 发布
 
 - 新增 `packaging/`：共用 PyInstaller spec（`ai-code-agent.spec`）、`build_common.py`、`build_windows.py`、`build_macos.py`、`check_version.py`、`requirements-build.txt`（PyInstaller 6.22.3）、`README.md`。

@@ -26,6 +26,24 @@ DIST_DIRECTORY = PROJECT_ROOT / "dist"
 WORK_DIRECTORY = PROJECT_ROOT / "temp" / "assembly" / "pyinstaller-work"
 
 
+def ensure_utf8_console():
+    """把标准输出 / 错误切到 UTF-8，保证中文在任何控制台编码下都能打印。
+
+    Windows 控制台的默认编码取决于系统区域（例如英文系统为 cp1252），
+    打印中文会抛 ``UnicodeEncodeError`` 并让脚本以退出码 1 结束。
+    这里显式改成 UTF-8；``errors="replace"`` 保证即使终端字体显示不了，
+    也只是出现替代字符，不会让进程崩溃。
+
+    必须在任何中文输出之前调用。用 ``getattr`` 探测 ``reconfigure``：
+    流被替换成不支持它的对象（例如测试捕获器）时跳过即可。
+    """
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is None:
+            continue
+        reconfigure(encoding="utf-8", errors="replace")
+
+
 def read_desktop_version():
     """从 ``desktop/__init__.py`` 读出字符串常量 ``__version__``。
 

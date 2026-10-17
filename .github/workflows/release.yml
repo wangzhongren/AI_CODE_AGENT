@@ -14,6 +14,10 @@ permissions:
 jobs:
   build-windows:
     runs-on: windows-latest
+    # 第二层保障：脚本里也调用了 ensure_utf8_console()。
+    # Windows runner 默认控制台编码不是 UTF-8，中文 print 会抛 UnicodeEncodeError。
+    env:
+      PYTHONIOENCODING: "utf-8"
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -46,6 +50,9 @@ jobs:
 
   build-macos:
     runs-on: macos-latest
+    # 与 build-windows 一致；macOS runner 通常已是 UTF-8，这里是显式兜底。
+    env:
+      PYTHONIOENCODING: "utf-8"
     steps:
       - name: Check out repository
         uses: actions/checkout@v4

@@ -6,7 +6,8 @@
 2. `desktop_main.environment_file_path()` 在源码态 / 打包态分别指向哪里；
 3. 打包态 `read_environment()` 真的从 exe 同级目录读到三个变量；
 4. 两个构建脚本与 `check_version.py` 语法可编译；
-5. `.github/workflows/release.yml` 能被 YAML 解析，且 job 与权限结构符合设计。
+5. `.github/workflows/release.yml` 能被 YAML 解析，且 job 与权限结构符合设计；
+6. 非 UTF-8 控制台编码（`PYTHONIOENCODING=cp1252`）下脚本仍能打印中文并正常退出。
 
 运行：
 
@@ -16,6 +17,7 @@
 from __future__ import annotations
 
 import os
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -160,12 +162,40 @@ def check_workflow():
     check(trigger.get("push", {}).get("tags") == ["v*"], "触发条件是推送 v* tag")
 
 
+def check_console_encoding():
+    """回归：Windows runner 的控制台编码不是 UTF-8 时，中文 print 不得抛异常。
+
+    ``PYTHONIOENCODING=cp1252`` 模拟英文 Windows 控制台；子进程的输出按 UTF-8
+    解码（脚本已把流切到 UTF-8），退出码应为 0。
+    """
+    check(getattr(build_common, "ensure_utf8_console", None) is not None,
+          "build_common 提供 ensure_utf8_console()")
+    command = [sys.executable, str(PACKAGING_DIRECTORY / "check_version.py"), "v1.0.0"]
+    environment = os.environ.copy()
+    environment["PYTHONIOENCODING"] = "cp1252"
+    completed = subprocess.run(
+        command,
+        cwd=str(PROJECT_ROOT),
+        env=environment,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    check(completed.returncode == 0,
+          "PYTHONIOENCODING=cp1252 下 check_version.py v1.0.0 退出码 0（实际 %d）" % completed.returncode)
+    output = completed.stdout.decode("utf-8", errors="replace")
+    check("版本校验" in output and "通过" in output,
+          "PYTHONIOENCODING=cp1252 下中文输出按 UTF-8 输出且可读")
+    check(completed.stderr == b"",
+          "PYTHONIOENCODING=cp1252 下没有编码异常输出到 stderr")
+
+
 def main():
     check_version_and_names()
     check_environment_paths()
     check_frozen_read_environment()
     check_scripts_compile()
     check_workflow()
+    check_console_encoding()
 
     if FAILURES:
         print("[FAIL] %d 项未通过：%s" % (len(FAILURES), "; ".join(FAILURES)))
