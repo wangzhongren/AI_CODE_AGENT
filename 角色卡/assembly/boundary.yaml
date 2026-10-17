@@ -1,0 +1,65 @@
+role: assembly
+entries:
+  - kind: file
+    path: main.py
+    purpose: 入口：产品经理对话 + 不含编排器的线性流程（pj → be → fe）
+  - kind: file
+    path: main3.py
+    purpose: 入口：组装四个业务智能体并交给编排器驱动
+  - kind: file
+    path: enhanced_main.py
+    purpose: 入口：main3.py 的增强版，改进初始/变更需求识别
+  - kind: file
+    path: desktop_main.py
+    purpose: 桌面端真实接线入口：读环境变量、构造 LLM 与四个智能体、交给 desktop.run
+  - kind: file
+    path: requirements.txt
+    purpose: 依赖清单（运行时依赖，精确锁定）
+  - kind: file
+    path: .vscode/settings.json
+    purpose: 编辑器分析路径配置
+  - kind: directory
+    path: .github/workflows/
+    purpose: CI 工作流：构建 Windows / macOS 发行包并在 tag 推送时发布 Release
+  - kind: directory
+    path: packaging/
+    purpose: 打包配方与构建脚本（PyInstaller spec、构建驱动、构建期依赖清单）
+  - kind: directory
+    path: common/assembly/
+    purpose: 本角色私有辅助代码
+  - kind: directory
+    path: test/assembly/
+    purpose: 单元测试与启动冒烟测试；不含生产代码
+  - kind: directory
+    path: temp/assembly/
+    purpose: 未通过/返工产物暂存，供审核对照
+  - kind: file
+    path: 角色卡/assembly/feature-map.md
+    purpose: 自有系统功能导航
+  - kind: file
+    path: 角色卡/assembly/memo.md
+    purpose: 续接线索（简短、带日期与来源）
+  - kind: file
+    path: 角色卡/assembly/changelog.md
+    purpose: 变更历史
+  - kind: file
+    path: 角色卡/assembly/functional-description.md
+    purpose: 模块说明与代码位置
+  - kind: file
+    path: 角色卡/assembly/api-spec.md
+    purpose: 导出、依赖、契约符合性、测试证据
+  - kind: directory
+    path: 角色卡/assembly/docs/
+    purpose: 本角色设计/变更/修复历史
+  - kind: directory
+    path: 角色卡/assembly/docs/feature/
+    purpose: 稳定功能说明、流程图与历史链接
+  - kind: directory
+    path: 角色卡/assembly/docs/design/
+    purpose: 设计记录
+  - kind: directory
+    path: 角色卡/assembly/docs/change/
+    purpose: 变更记录
+  - kind: directory
+    path: 角色卡/assembly/docs/fix/
+    purpose: 修复记录

@@ -1,0 +1,3 @@
+# 构建期依赖（不进入运行时 requirements.txt）
+# PyInstaller 只在打发行包时需要，终端用户不需要安装。
+pyinstaller==6.22.3

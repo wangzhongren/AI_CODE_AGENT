@@ -1,75 +1,153 @@
-# Intelligent Project Development System
+# 代码生成助手（Intelligent Project Development System）
 
-An AI-agent-based automated project development system that leverages collaborative AI agents with specialized roles to complete software development tasks.
+一个基于多智能体的自动化项目开发系统：由若干协作的 AI 智能体分别扮演产品经理、项目经理、
+前端开发、后端开发与系统管理者，把一句需求变成一份能跑的项目骨架。现在有两套界面：
+**桌面窗口（PySide6）** 和**命令行**，两者共用同一套智能体与同一份 `.env` 配置。
 
-## System Architecture
+## 系统架构
 
-- **Product Manager Agent**: Responsible for generating the Product Requirements Document (PRD).  
-- **Project Manager Agent**: Responsible for creating development guidelines and project plans.  
-- **Frontend Developer Agent**: Responsible for developing and implementing the frontend application.  
-- **Backend Developer Agent**: Responsible for developing and implementing the backend service.  
-- **System Manager Agent**: Coordinates all agents and manages the overall project workflow.
+- **产品经理智能体**（Product Manager Agent）：生成产品需求文档 PRD。
+- **项目经理智能体**（Project Manager Agent）：生成开发指导文档与项目计划，分析变更需求。
+- **后端开发智能体**（Backend Developer Agent）：数据库与 API 设计，产出 `api_spec.json` 与后端文件。
+- **前端开发智能体**（Frontend Developer Agent）：生成页面文件（HTML / Vue / Vite）。
+- **系统管理者智能体**（System Manager Agent）：编排上述智能体，维护项目状态，处理变更请求。
 
-## Technology Stack
+## 技术栈
 
-- Python 3.10+  
-- OpenAI LLM API  
-- Custom AI Agent Factory Framework  
-- Python-dotenv (environment variable management)
+- Python 3.12（项目内虚拟环境 `.venv`）
+- OpenAI 兼容接口（`openai`）
+- `python-dotenv`（读取 `.env` 环境变量）
+- PySide6（桌面窗口，版本精确锁定 `6.12.0`）
+- 自研的智能体框架 `ai_agent_factory`
 
-## Environment Configuration
+## 环境配置（`.env`）
 
-1. Copy the `.env.example` file and rename it to `.env`.  
-2. Configure the following environment variables in `.env`:
-
-```bash
-api_key=your_openai_api_key
-model_name=your_model_name
-base_url=your_base_url
-```
-
-## Running the System
+在**项目根目录**新建一个名为 `.env` 的文件，写入下面三行（把等号右边换成你自己的值）：
 
 ```bash
-python enhanced_main.py
+api_key=你的密钥
+model_name=模型名（例如 gpt-4o-mini）
+base_url=接口地址（例如 https://api.openai.com/v1）
 ```
 
-## Usage Instructions
+说明：
 
-1. **Initial Stage**: Enter your project requirements — the system will automatically generate and develop the full project.  
-2. **Post-Development**: Input updated requirements to modify and iterate on the existing project.  
-3. **System Commands**:
-   - `status` — View the current project status  
-   - `next` — Execute the next development step  
-   - `quit` — Exit the system
+1. 这三个变量名是固定的：`api_key` / `model_name` / `base_url`。桌面端与命令行读的是**同一份** `.env`。
+2. 仓库里**没有** `.env.example` 模板文件，不需要去找或复制它——直接新建 `.env` 即可。
+3. `.env` 已在 `.gitignore` 中，不会被提交；请不要把真实密钥写进任何会入库的文件。
+4. 三个变量缺任何一个（或写成空值），桌面端启动时会打印可读提示，告诉你缺哪个、`.env` 应该放在哪，
+   而不是把空值传给模型接口后给你一段看不懂的报错。
 
-## Key Features
+## 依赖与虚拟环境
 
-- Fully automated project development workflow  
-- Multi-agent collaborative architecture  
-- Intelligent state tracking and management  
-- Support for iterative development and requirement changes  
-- Built-in error handling and recovery mechanisms
+依赖装在**项目内**的虚拟环境 `.venv/` 里（Python 3.12）。这个目录不进版本控制。
 
-## Project Status Tracking
+```bash
+# 首次准备（已有 .venv 时跳过）
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
 
-The system automatically tracks the following development milestones:
-- PRD (Product Requirements Document) completed  
-- Development guidelines completed  
-- Backend development completed  
-- Frontend development completed
+- 运行时依赖见 `requirements.txt`：`openai`、`python-dotenv`、`PySide6==6.12.0`（桌面框架按书面契约精确锁定版本，避免界面行为随版本漂移）。
+- 测试工具 `pytest` 是开发期依赖，**不写进** `requirements.txt`，按需装进 `.venv`。
+- 所有命令请统一用 `.venv\Scripts\python.exe`：系统 Python 没装这些依赖，直接 `python` 可能报导入错误。
 
-## Development Workflow
+运行测试：
 
-1. User submits project requirements.  
-2. Product Manager Agent generates the PRD.  
-3. Project Manager Agent creates detailed development guidelines.  
-4. Frontend and Backend Developer Agents develop in parallel.  
-5. System Manager Agent coordinates integration and ensures alignment.
+```bash
+.venv\Scripts\python.exe -m pytest test
+```
 
-## Notes
+## 启动方式
 
-- An active OpenAI API key is required.  
-- A stable internet connection is necessary to access LLM services.  
-- The system automatically switches to modification mode once initial development is complete.
+### 桌面窗口（真实接线，推荐）
 
+```bash
+.venv\Scripts\python.exe desktop_main.py
+```
+
+读项目根目录的 `.env`，构造模型客户端与四个业务智能体，打开窗口。在输入框里提交需求后，
+窗口的**只读输出区**会显示编排器与四个角色（产品经理 / 项目经理 / 后端 / 前端）的**完整流式输出**：
+普通文字逐字追加，每轮结束另起一段，出错内容用红色加粗显示。
+
+窗口底部只有**一行状态提示**，在「就绪」与「运行中…（关闭窗口可中断）」之间切换；
+运行中发送按钮会变灰，输入框仍可编辑。
+
+**项目阶段与里程碑的图形化显示尚未实装**：状态快照接口 `get_snapshot()`（契约 C2）已实现并有测试，
+但桌面界面目前没有调用它，窗口里看不到五个里程碑是否完成、也看不到当前 `phase`。
+
+关闭窗口时工作线程会被回收。
+
+三种退出码值得知道：`0` 正常关闭；`1` 运行中出错；`2` 配置问题（缺环境变量）。
+
+### 桌面窗口（界面骨架，未接线）
+
+```bash
+.venv\Scripts\python.exe -m desktop
+```
+
+只打开界面本身，用于查看与调试界面层：窗口能开、能输入、能关闭，但**没有接真实智能体**。
+点发送时会明确提示「桌面端还没接到编排层」，不会假装在工作。
+
+### 命令行
+
+```bash
+.venv\Scripts\python.exe enhanced_main.py   # 增强入口：自动识别初始需求与变更需求
+.venv\Scripts\python.exe main3.py           # 组装四个业务智能体，交给编排器驱动
+.venv\Scripts\python.exe main.py            # 旧版线性流程（不含编排器）
+```
+
+命令行与桌面端**共用同一份 `.env`**，也共用同一批智能体实现，只是交互界面不同。
+
+### 两个桌面相关路径的分工
+
+| 路径 | 所有者 | 职责 |
+| --- | --- | --- |
+| `desktop_main.py` | 装配角色 | 只做接线：读环境变量、构造模型客户端与四个业务智能体、启动时把输出监听器铺到编排器和子智能体、把编排器交给界面。不含业务逻辑 |
+| `desktop/` | 桌面客户端角色 | 界面层：窗口、工作线程、流式输出渲染、启动与关闭操作。**状态面板尚未实装**（`get_snapshot()` 已就绪，界面待接）。不遍历编排器私有结构，不自己下发监听器 |
+| `myagent/` | 业务智能体 / 流程编排角色 | 智能体与调度逻辑 |
+| `ai_agent_factory/` | 平台框架 / 文件产出角色 | 智能体运行时基类、模型供应商实现、文件操作 |
+
+## 使用说明
+
+1. **初始阶段**：输入项目需求，系统自动生成并开发整个项目。
+2. **后续阶段**：输入新的变更需求，在既有项目上修改迭代。
+3. **命令行里的系统命令**：
+   - `status` — 查看当前项目状态
+   - `next` — 执行下一步开发
+   - `quit` — 退出系统
+
+## 项目状态跟踪
+
+系统自动跟踪以下里程碑：
+
+- PRD（产品需求文档）已完成
+- 开发指导文档已完成
+- 后端开发已完成
+- 前端开发已完成
+
+这些里程碑状态目前**只在命令行里**显示（`status` 命令，以及编排器的 `report_status()` 打印）。
+桌面端读取它们的接口 `get_snapshot()`（契约 C2）已实现并通过测试，但**界面还没有接上**，
+所以窗口里看不到这些状态——这是待完成项，不是已实现的功能。
+
+## 开发工作流
+
+1. 用户提交项目需求。
+2. 产品经理智能体生成 PRD。
+3. 项目经理智能体生成详细的开发指导文档。
+4. 前端与后端开发智能体并行开发。
+5. 系统管理者智能体协调集成、保证一致性。
+
+## 注意事项
+
+- 需要可用的 API 密钥，缺失时桌面端会提示你去补 `.env`。
+- 需要稳定的网络以访问模型服务。
+- 首轮开发完成后，命令行入口 `enhanced_main.py` 会自动切换到「变更」模式（判断依据是输入里的变更关键词）。
+- 桌面窗口目前只有输出区与一行状态提示，**没有**阶段/里程碑面板——`get_snapshot()` 已就绪，界面侧待实装。
+- **测试状态如实说明**：各角色的单元与层内测试已通过，但桌面端的**端到端集成验收（从输入需求到产出文件的全链路）尚未进行**，请不要把它当作已经端到端验收的成品。
+
+## 相关文档
+
+- 架构与角色协作图：`角色卡/project-management/docs/architecture.md`
+- 桌面端契约（v2，含 C1–C4）：`docs/contracts/desktop-client-v2.md`
+- 协作步骤与当前进度：`docs/workflow.md`

@@ -1,0 +1,110 @@
+name: release-packages
+
+# 推送形如 v1.0.0 的 tag 时，构建 Windows / macOS 发行包并创建 GitHub Release。
+# 设计：docs/design/2026-10-17_design_release-packaging-ci.md
+on:
+  push:
+    tags:
+      - "v*"
+
+# 默认只读；写权限只给 release job。
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install runtime and build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --requirement requirements.txt
+          python -m pip install --requirement packaging/requirements-build.txt
+
+      - name: Verify tag matches desktop.__version__
+        run: python packaging/check_version.py "${{ github.ref_name }}"
+
+      - name: Build Windows packages
+        run: python packaging/build_windows.py
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-packages
+          if-no-files-found: error
+          path: |
+            dist/AI-Code-Agent-*-windows-x64.zip
+            dist/AI-Code-Agent-*-windows-x64.exe
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install runtime and build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --requirement requirements.txt
+          python -m pip install --requirement packaging/requirements-build.txt
+
+      - name: Verify tag matches desktop.__version__
+        run: python packaging/check_version.py "${{ github.ref_name }}"
+
+      - name: Build macOS package
+        run: python packaging/build_macos.py
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-package
+          if-no-files-found: error
+          path: dist/AI-Code-Agent-*-macos.zip
+
+  release:
+    needs:
+      - build-windows
+      - build-macos
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Check artifact count
+        run: |
+          set -euo pipefail
+          ls -l artifacts
+          count=$(find artifacts -maxdepth 1 -type f | wc -l)
+          if [ "$count" -ne 3 ]; then
+            echo "Expected 3 release files, found $count." >&2
+            exit 1
+          fi
+
+      - name: Create GitHub Release
+        env:
+          # 内置令牌，不需要在仓库里配置任何 secret。
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "$GITHUB_REF_NAME" artifacts/* \
+            --verify-tag \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes

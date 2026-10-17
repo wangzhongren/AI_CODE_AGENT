@@ -1,0 +1,41 @@
+role: desktop-client
+entries:
+  - kind: directory
+    path: desktop/
+    purpose: 桌面客户端源码：Qt 界面、工作线程、输出渲染、状态面板、打包配置
+  - kind: directory
+    path: common/desktop-client/
+    purpose: 本角色私有辅助代码
+  - kind: directory
+    path: test/desktop-client/
+    purpose: 单元与层内契约测试；不含生产代码
+  - kind: directory
+    path: temp/desktop-client/
+    purpose: 未通过/返工产物暂存，供审核对照
+  - kind: file
+    path: 角色卡/desktop-client/feature-map.md
+    purpose: 功能导航
+  - kind: file
+    path: 角色卡/desktop-client/memo.md
+    purpose: 续接线索
+  - kind: file
+    path: 角色卡/desktop-client/changelog.md
+    purpose: 变更历史
+  - kind: file
+    path: 角色卡/desktop-client/functional-description.md
+    purpose: 模块说明
+  - kind: file
+    path: 角色卡/desktop-client/api-spec.md
+    purpose: 导出/依赖/契约符合性/测试证据
+  - kind: directory
+    path: 角色卡/desktop-client/docs/design/
+    purpose: 设计记录
+  - kind: directory
+    path: 角色卡/desktop-client/docs/feature/
+    purpose: 稳定功能说明
+  - kind: directory
+    path: 角色卡/desktop-client/docs/change/
+    purpose: 变更记录
+  - kind: directory
+    path: 角色卡/desktop-client/docs/fix/
+    purpose: 修复记录

@@ -1,0 +1,38 @@
+role: testing
+entries:
+  - kind: directory
+    path: test/testing/
+    purpose: 跨角色联调、完整流程、回归用例及其测试夹具与辅助代码；不含生产代码
+  - kind: directory
+    path: temp/testing/
+    purpose: 未通过/返工产物暂存，供审核对照
+  - kind: file
+    path: 角色卡/testing/feature-map.md
+    purpose: 功能导航（写明「无直接负责的业务功能」）
+  - kind: file
+    path: 角色卡/testing/memo.md
+    purpose: 续接线索（简短、带日期与来源）
+  - kind: file
+    path: 角色卡/testing/changelog.md
+    purpose: 变更历史
+  - kind: file
+    path: 角色卡/testing/functional-description.md
+    purpose: 模块说明与代码位置
+  - kind: file
+    path: 角色卡/testing/api-spec.md
+    purpose: 导出、依赖、契约符合性、测试证据
+  - kind: directory
+    path: 角色卡/testing/docs/
+    purpose: 测试方案、问题记录与测试报告
+  - kind: directory
+    path: 角色卡/testing/docs/feature/
+    purpose: 一般不用；如需说明测试范围，链接受测角色的功能文档
+  - kind: directory
+    path: 角色卡/testing/docs/design/
+    purpose: 复杂测试方案的设计记录
+  - kind: directory
+    path: 角色卡/testing/docs/change/
+    purpose: 测试范围的变更记录
+  - kind: directory
+    path: 角色卡/testing/docs/fix/
+    purpose: 复测已修复问题的记录

@@ -1,0 +1,53 @@
+role: business-agents
+entries:
+  - kind: file
+    path: myagent/product_manager_agent.py
+    purpose: 产品经理智能体：由需求生成 PRD
+  - kind: file
+    path: myagent/project_manager_agent.py
+    purpose: 项目经理智能体：生成前后端与集成指导文档、分析变更需求
+  - kind: file
+    path: myagent/backend_developer_agent.py
+    purpose: 后端开发智能体：数据库/API 设计、生成 api_spec.json 与后端文件
+  - kind: file
+    path: myagent/frontend_developer_agent.py
+    purpose: 前端开发智能体：生成页面文件
+  - kind: directory
+    path: common/business-agents/
+    purpose: 本角色私有辅助代码
+  - kind: directory
+    path: test/business-agents/
+    purpose: 单元与层内契约测试；不含生产代码
+  - kind: directory
+    path: temp/business-agents/
+    purpose: 未通过/返工产物暂存，供审核对照
+  - kind: file
+    path: 角色卡/business-agents/feature-map.md
+    purpose: 自有系统功能导航
+  - kind: file
+    path: 角色卡/business-agents/memo.md
+    purpose: 续接线索（简短、带日期与来源）
+  - kind: file
+    path: 角色卡/business-agents/changelog.md
+    purpose: 变更历史
+  - kind: file
+    path: 角色卡/business-agents/functional-description.md
+    purpose: 模块说明与代码位置
+  - kind: file
+    path: 角色卡/business-agents/api-spec.md
+    purpose: 导出、依赖、契约符合性、测试证据
+  - kind: directory
+    path: 角色卡/business-agents/docs/
+    purpose: 本角色设计/变更/修复历史
+  - kind: directory
+    path: 角色卡/business-agents/docs/feature/
+    purpose: 稳定功能说明、流程图与历史链接
+  - kind: directory
+    path: 角色卡/business-agents/docs/design/
+    purpose: 设计记录
+  - kind: directory
+    path: 角色卡/business-agents/docs/change/
+    purpose: 变更记录
+  - kind: directory
+    path: 角色卡/business-agents/docs/fix/
+    purpose: 修复记录

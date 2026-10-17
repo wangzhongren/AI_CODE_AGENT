@@ -1,0 +1,68 @@
+role: project-management
+entries:
+  - kind: directory
+    path: common/shared/
+    purpose: 跨角色共享组件；本角色是唯一写入者
+  - kind: directory
+    path: test/project-management/shared/
+    purpose: common/shared/ 的专属测试；不含生产代码
+  - kind: directory
+    path: temp/project-management/
+    purpose: 未通过/返工产物暂存，供审核对照
+  - kind: file
+    path: 角色卡/project-management/docs/architecture.md
+    purpose: 总体架构：系统用途、角色职责、主要模块、公开契约、协作图
+  - kind: file
+    path: 角色卡/project-management/docs/architecture/shared-components.md
+    purpose: 共享组件清单（唯一描述处）
+  - kind: file
+    path: 角色卡/project-management/docs/project-rules.md
+    purpose: 项目全局工程规则
+  - kind: directory
+    path: 角色卡/project-management/docs/meetings/
+    purpose: 被要求主持会议时的共享纪要
+  - kind: directory
+    path: 角色卡/project-management/docs/scheduling/
+    purpose: 每个协作任务一份排期记录
+  - kind: file
+    path: 角色卡/project-management/feature-map.md
+    purpose: 功能导航（无直接负责的业务功能，列共享组件）
+  - kind: file
+    path: 角色卡/project-management/memo.md
+    purpose: 续接线索（简短、带日期与来源）
+  - kind: file
+    path: 角色卡/project-management/changelog.md
+    purpose: 变更历史
+  - kind: file
+    path: 角色卡/project-management/functional-description.md
+    purpose: 模块说明与代码位置
+  - kind: file
+    path: 角色卡/project-management/api-spec.md
+    purpose: 导出、依赖、契约符合性、测试证据
+  - kind: directory
+    path: 角色卡/project-management/docs/
+    purpose: 本角色设计/变更/修复历史
+  - kind: directory
+    path: 角色卡/project-management/docs/feature/
+    purpose: 共享组件的稳定功能说明
+  - kind: directory
+    path: 角色卡/project-management/docs/design/
+    purpose: 设计记录
+  - kind: directory
+    path: 角色卡/project-management/docs/change/
+    purpose: 变更记录
+  - kind: directory
+    path: 角色卡/project-management/docs/fix/
+    purpose: 修复记录
+  - kind: file
+    path: README.md
+    purpose: 项目总览：架构说明、环境配置、运行方式
+  - kind: file
+    path: DEVELOPMENT_GUIDE.md
+    purpose: ai_agent_factory 框架开发指南
+  - kind: file
+    path: license
+    purpose: 项目许可证正文（MIT）
+  - kind: file
+    path: .gitignore
+    purpose: 版本控制忽略规则

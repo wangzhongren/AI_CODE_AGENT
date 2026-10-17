@@ -3,6 +3,31 @@ import re
 import os
 from ai_agent_factory.agent.baseagent import BaseAgent
 class SystemManagerAgent(BaseAgent):
+    # 契约 C2 规定的 phase 稳定取值，新增取值属于契约变更。
+    PHASE_IDLE = "idle"
+    PHASE_PRD = "prd"
+    PHASE_GUIDES = "guides"
+    PHASE_BACKEND = "backend"
+    PHASE_FRONTEND = "frontend"
+    PHASE_CHANGE = "change"
+    PHASE_DONE = "done"
+    PHASE_VALUES = (
+        PHASE_IDLE,
+        PHASE_PRD,
+        PHASE_GUIDES,
+        PHASE_BACKEND,
+        PHASE_FRONTEND,
+        PHASE_CHANGE,
+        PHASE_DONE
+    )
+    # 快照 state 字段的固定顺序，便于界面层与测试稳定比对。
+    STATE_KEYS = (
+        'prd_completed',
+        'guides_completed',
+        'backend_completed',
+        'frontend_completed',
+        'project_completed'
+    )
     def __init__(self, basellm, agents):
         self.agents = agents  # 包含 pm, pj, fe, be 四个 agents
         self.project_state = {
@@ -58,7 +83,11 @@ class SystemManagerAgent(BaseAgent):
             self.make_decision(token)
         except Exception as e:
             print(f"❌ 管理者决策解析错误: {e}")
+            # 诊断打印之后必须让异常继续上抛：BaseAgent.chat() 的 except 才会按契约 C1
+            # 先向监听器发 error 事件、再裸 raise。吞掉它会让界面层的错误数为 0、窗口静默。
+            # 裸 raise 保留原异常类型与 traceback；KeyboardInterrupt 等 BaseException 不在此接。
             print("原始响应:", token)
+            raise
     def token_deal(self, result: str):
         print(result, end='', flush=True)
     def make_decision(self, decision: str):
@@ -213,6 +242,128 @@ class SystemManagerAgent(BaseAgent):
         print(f"{status_icon} 前端程序员: {'页面开发已完成' if self.project_state['frontend_completed'] else '进行中'}")
         status_icon = "✅" if self.project_state['project_completed'] else "⏳"
         print(f"{status_icon} 项目整体: {'已完成' if self.project_state['project_completed'] else '进行中'}")
+    def get_snapshot(self):
+        """返回项目状态的只读快照（契约 C2），供界面层显示「项目走到哪一步」。
+
+        返回形如 ``{'state': {...五个布尔...}, 'phase': 'guides'}`` 的新字典。
+        本方法无副作用：不推进 project_state、不调用任何业务智能体、不触发 LLM
+        请求、不改对话上下文。返回值是副本，调用方修改它不会影响内部状态。
+        """
+        state = {}
+        for key in self.STATE_KEYS:
+            state[key] = bool(self.project_state[key])
+        # phase 与 state 来自同一次读取，保证两者不会自相矛盾。
+        return {
+            'state': state,
+            'phase': self._derive_phase(state)
+        }
+
+    def _derive_phase(self, state):
+        """由状态快照推导当前阶段，返回值必在 PHASE_VALUES 内。
+
+        判定顺序与 execute_next_step() 的推进顺序一致：
+        完成 → 变更 → PRD → 指导文档 → 后端 → 前端。
+        idle 只在「五个布尔全为 False 且没有任何需求进入」时返回。
+        """
+        if state['project_completed']:
+            return self.PHASE_DONE
+        dev_completed = (
+            state['prd_completed']
+            and state['guides_completed']
+            and state['backend_completed']
+            and state['frontend_completed']
+        )
+        if dev_completed:
+            # 四项开发都完成但项目未标记完成：execute_next_step() 在这里落到
+            # 「项目已完成，等待修改需求」，入口文件也据此把输入当成变更需求。
+            return self.PHASE_CHANGE
+        if not state['prd_completed']:
+            if self._project_started(state):
+                return self.PHASE_PRD
+            return self.PHASE_IDLE
+        if not state['guides_completed']:
+            return self.PHASE_GUIDES
+        if not state['backend_completed']:
+            return self.PHASE_BACKEND
+        return self.PHASE_FRONTEND
+
+    def _project_started(self, state):
+        """流程是否已经启动过。
+
+        只有在「一个布尔都没推进、上下文里也没有用户消息」时才算未开始（idle）；
+        其余情况都已经在 PRD 阶段里——否则界面会出现「idle 但后端已完成」这种
+        与 state 自相矛盾的组合。
+        """
+        for value in state.values():
+            if value:
+                return True
+        context = self.get_context()
+        if len(context) > 1:
+            return True
+        return False
+
+    def set_output_listener_for_children(self, listener):
+        """把输出监听器下发给四个子智能体（契约 C1.2）。
+
+        桌面客户端只订阅得到 ``self`` 这一个对象；PRD、指导文档、后端、前端是由
+        四个独立子智能体产生的，必须各自订阅，界面才看得到它们的流式输出。
+        本方法对 ``agents`` 字典里的每一个智能体调用 C1.1 的
+        ``set_output_listener(listener)``。
+
+        失败处理：某个子智能体没有该能力、或订阅抛错时，**不跳过、不降级**——
+        把每个失败者的键名、类型和原始错误收集起来，最后抛一个可读的
+        ``RuntimeError``。抛错前已成功下发的子智能体保持订阅；本方法幂等，
+        修好后重试不会叠加。
+
+        未调用本方法时子智能体不订阅，三个 CLI 入口行为与从前完全一致。
+        """
+        failures = []
+        for name, agent in self.agents.items():
+            setter = getattr(agent, "set_output_listener", None)
+            if setter is None:
+                failures.append(
+                    f"{name}（{type(agent).__name__}）没有 set_output_listener 方法"
+                )
+                continue
+            try:
+                setter(listener)
+            except Exception as error:
+                failures.append(
+                    f"{name}（{type(agent).__name__}）订阅失败: "
+                    f"{type(error).__name__}: {error}"
+                )
+        self._raise_child_listener_failures("下发输出监听器", failures)
+
+    def clear_output_listener_for_children(self):
+        """清除四个子智能体的输出监听器（契约 C1.2 第 6 条）。
+
+        失败处理与 ``set_output_listener_for_children()`` 相同：不跳过、不降级，
+        收集后抛可读的 ``RuntimeError``。可重复调用。
+        """
+        failures = []
+        for name, agent in self.agents.items():
+            clearer = getattr(agent, "clear_output_listener", None)
+            if clearer is None:
+                failures.append(
+                    f"{name}（{type(agent).__name__}）没有 clear_output_listener 方法"
+                )
+                continue
+            try:
+                clearer()
+            except Exception as error:
+                failures.append(
+                    f"{name}（{type(agent).__name__}）清除订阅失败: "
+                    f"{type(error).__name__}: {error}"
+                )
+        self._raise_child_listener_failures("清除子智能体输出监听器", failures)
+
+    def _raise_child_listener_failures(self, action, failures):
+        """把子智能体订阅的失败汇总成一个可读异常抛出；没有失败就正常返回。"""
+        if not failures:
+            return
+        detail = "；".join(failures)
+        raise RuntimeError(f"{action}失败：{detail}")
+
     def execute_next_step(self):
         """执行下一步开发任务"""
         # 检查项目进度并决定下一步

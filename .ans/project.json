@@ -1,0 +1,83 @@
+{
+  "projectRoot": "D:/work/vibe-code/codeagent",
+  "skillRoot": "C:/Users/MLoong/.claude/skills/ans-governed-construction",
+  "roles": {
+    "artifact-io": {
+      "card": "角色卡/artifact-io/role-card.md",
+      "boundary": "角色卡/artifact-io/boundary.yaml"
+    },
+    "assembly": {
+      "card": "角色卡/assembly/role-card.md",
+      "boundary": "角色卡/assembly/boundary.yaml"
+    },
+    "business-agents": {
+      "card": "角色卡/business-agents/role-card.md",
+      "boundary": "角色卡/business-agents/boundary.yaml"
+    },
+    "desktop-client": {
+      "card": "角色卡/desktop-client/role-card.md",
+      "boundary": "角色卡/desktop-client/boundary.yaml"
+    },
+    "orchestration": {
+      "card": "角色卡/orchestration/role-card.md",
+      "boundary": "角色卡/orchestration/boundary.yaml"
+    },
+    "platform-framework": {
+      "card": "角色卡/platform-framework/role-card.md",
+      "boundary": "角色卡/platform-framework/boundary.yaml"
+    },
+    "project-management": {
+      "card": "角色卡/project-management/role-card.md",
+      "boundary": "角色卡/project-management/boundary.yaml"
+    },
+    "testing": {
+      "card": "角色卡/testing/role-card.md",
+      "boundary": "角色卡/testing/boundary.yaml"
+    }
+  },
+  "governanceBoundary": {
+    "path": "角色卡/governance-boundary.yaml",
+    "acceptance": {
+      "accepted": true,
+      "source": "desktop-app:操作者为已有角色的项目显式建立治理记录（操作者点击确认）",
+      "pin": [
+        {
+          "path": "角色卡/governance-boundary.yaml",
+          "sha256": "a19ee561cac958c29ae4c1b4b8001f57303e17f48a83ab780bc87dde7f6fce93"
+        },
+        {
+          "path": "角色卡/artifact-io/boundary.yaml",
+          "sha256": "8f4c2adc895ecccc4d72770ef9eaa6e84edf4f5bccbc09c0c3ed4147fa961f00"
+        },
+        {
+          "path": "角色卡/assembly/boundary.yaml",
+          "sha256": "dc688cc9f469b24f7c7c1bc7a1e18c2a90df26e831fe2aed46cbc270328916a8"
+        },
+        {
+          "path": "角色卡/business-agents/boundary.yaml",
+          "sha256": "cd738531873d38e00a0733acfb4adf3b7f36a8776e86d6c2cc09aed4526ccd2b"
+        },
+        {
+          "path": "角色卡/desktop-client/boundary.yaml",
+          "sha256": "793157465739c794536532b1198d9b22c8688ed4067d84858f2bbb765a68c20d"
+        },
+        {
+          "path": "角色卡/orchestration/boundary.yaml",
+          "sha256": "b0d716f2053f92edc1a0c3ae513bd9552240ceb439cc858188974818d05058ef"
+        },
+        {
+          "path": "角色卡/platform-framework/boundary.yaml",
+          "sha256": "b9777e92b5d5511cd0448c98ceed1d59ce6883c3ba44474bcd51e411fedc8ca1"
+        },
+        {
+          "path": "角色卡/project-management/boundary.yaml",
+          "sha256": "f0bcc0a5018cca6c02f72b533c7c520ee5ad990057a6182e8fdf2d1d11f1beb1"
+        },
+        {
+          "path": "角色卡/testing/boundary.yaml",
+          "sha256": "b67b0d895d50fbd24790f5c49304182fbc4488e1477d6b867557e807a1ef6484"
+        }
+      ]
+    }
+  }
+}

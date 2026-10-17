@@ -1,0 +1,56 @@
+role: platform-framework
+entries:
+  - kind: file
+    path: ai_agent_factory/agent/baseagent.py
+    purpose: 智能体运行时抽象基类：对话上下文、流式回调分发、chat() 主流程、输出事件订阅
+  - kind: file
+    path: ai_agent_factory/llms/base_llm.py
+    purpose: LLM 供应商抽象契约（BaseLLM）
+  - kind: file
+    path: ai_agent_factory/llms/base_llm_openai.py
+    purpose: OpenAI 兼容流式实现（OpenAILLM）
+  - kind: file
+    path: ai_agent_factory/llms/openai
+    purpose: 0 字节无扩展名残留文件（确认前保留且不引用）
+  - kind: file
+    path: ai_agent_factory/__init__.py
+    purpose: 包标记
+  - kind: directory
+    path: common/platform-framework/
+    purpose: 本角色私有辅助代码与框架支持代码
+  - kind: directory
+    path: test/platform-framework/
+    purpose: 单元与层内契约测试；不含生产代码
+  - kind: directory
+    path: temp/platform-framework/
+    purpose: 未通过/返工产物暂存，供审核对照
+  - kind: file
+    path: 角色卡/platform-framework/feature-map.md
+    purpose: 自有系统功能导航
+  - kind: file
+    path: 角色卡/platform-framework/memo.md
+    purpose: 续接线索（简短、带日期与来源）
+  - kind: file
+    path: 角色卡/platform-framework/changelog.md
+    purpose: 变更历史
+  - kind: file
+    path: 角色卡/platform-framework/functional-description.md
+    purpose: 模块说明与代码位置
+  - kind: file
+    path: 角色卡/platform-framework/api-spec.md
+    purpose: 导出、依赖、契约符合性、测试证据
+  - kind: directory
+    path: 角色卡/platform-framework/docs/
+    purpose: 本角色设计/变更/修复历史
+  - kind: directory
+    path: 角色卡/platform-framework/docs/feature/
+    purpose: 稳定功能说明、流程图与历史链接
+  - kind: directory
+    path: 角色卡/platform-framework/docs/design/
+    purpose: 设计记录
+  - kind: directory
+    path: 角色卡/platform-framework/docs/change/
+    purpose: 变更记录
+  - kind: directory
+    path: 角色卡/platform-framework/docs/fix/
+    purpose: 修复记录

@@ -1,0 +1,44 @@
+role: artifact-io
+entries:
+  - kind: file
+    path: ai_agent_factory/utils/file_operation_handler.py
+    purpose: 文件操作子系统：解析 LLM 文本中的文件操作并在 output/ 沙箱内执行
+  - kind: directory
+    path: common/artifact-io/
+    purpose: 本角色私有辅助代码
+  - kind: directory
+    path: test/artifact-io/
+    purpose: 单元与层内契约测试；不含生产代码
+  - kind: directory
+    path: temp/artifact-io/
+    purpose: 未通过/返工产物暂存，供审核对照
+  - kind: file
+    path: 角色卡/artifact-io/feature-map.md
+    purpose: 自有系统功能导航
+  - kind: file
+    path: 角色卡/artifact-io/memo.md
+    purpose: 续接线索（简短、带日期与来源）
+  - kind: file
+    path: 角色卡/artifact-io/changelog.md
+    purpose: 变更历史
+  - kind: file
+    path: 角色卡/artifact-io/functional-description.md
+    purpose: 模块说明与代码位置
+  - kind: file
+    path: 角色卡/artifact-io/api-spec.md
+    purpose: 导出、依赖、契约符合性、测试证据
+  - kind: directory
+    path: 角色卡/artifact-io/docs/
+    purpose: 本角色设计/变更/修复历史
+  - kind: directory
+    path: 角色卡/artifact-io/docs/feature/
+    purpose: 稳定功能说明、流程图与历史链接
+  - kind: directory
+    path: 角色卡/artifact-io/docs/design/
+    purpose: 设计记录
+  - kind: directory
+    path: 角色卡/artifact-io/docs/change/
+    purpose: 变更记录
+  - kind: directory
+    path: 角色卡/artifact-io/docs/fix/
+    purpose: 修复记录

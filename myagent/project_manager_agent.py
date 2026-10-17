@@ -1,10 +1,16 @@
 import json
 import re
 import os
+import sys
 from ai_agent_factory.agent.baseagent import BaseAgent
 from ai_agent_factory.utils.file_operation_handler import FileOperationHandler
 # fo = FileOperationHandler()
 class ProjectManagerAgent(BaseAgent):
+    # todo() 里「处理完文件操作后再调一次 self.chat()」的自递归上限。
+    # 每次后续对话都是一次真实模型调用（花 API 额度）；模型若持续返回文件操作
+    # 指令就会一直递归，实测同类代码能跑到 494 轮后 RecursionError。
+    # 取 8：正常任务 1~3 轮就结束，留有余量；最坏也只多花 8 次调用。
+    MAX_FOLLOWUP_ROUNDS = 8
     def __init__(self, basellm):
         fo = FileOperationHandler(llm=basellm)
         self.fo = fo;
@@ -66,6 +72,28 @@ class ProjectManagerAgent(BaseAgent):
         self.backend_guide = None
         self.integration_doc = None
         self.output_dir = "output"
+        # 本串任务里已发起的后续对话轮数，供 MAX_FOLLOWUP_ROUNDS 上限判断
+        self.followup_round = 0
+    def reserve_followup_round(self) -> bool:
+        """为一次「处理完文件操作后再调一次模型」申请额度。
+
+        返回 True 表示可以继续调用 self.chat()；
+        返回 False 表示已达 MAX_FOLLOWUP_ROUNDS 上限，调用方必须停止递归。
+        达到上限时向 stderr 打印带轮数的可见警告，并把计数清零，
+        让下一次由用户或上层发起的 chat() 重新获得完整额度。
+        """
+        if self.followup_round >= self.MAX_FOLLOWUP_ROUNDS:
+            self.followup_round = 0
+            print(
+                f"❌ [ProjectManagerAgent] 已达到后续对话轮数上限 "
+                f"{self.MAX_FOLLOWUP_ROUNDS} 轮，主动停止继续调用模型。"
+                f"可能原因：模型持续返回文件操作指令而没有给出最终结论。",
+                file=sys.stderr,
+                flush=True,
+            )
+            return False
+        self.followup_round += 1
+        return True
     def todo(self, token: str):
         try:
             print(f"🔍 收到项目经理响应，长度: {len(token)} 字符")
@@ -93,7 +121,11 @@ class ProjectManagerAgent(BaseAgent):
             # 如果没有文件操作指令，当作普通文本处理
             print(f"📝 项目经理回复: {token}")
             if is_need_loop:
-                self.chat(json.dumps(need_data,ensure_ascii=False))
+                if self.reserve_followup_round():
+                    self.chat(json.dumps(need_data,ensure_ascii=False))
+            else:
+                # 本轮没有文件操作，说明这一串后续对话自然结束，计数归零
+                self.followup_round = 0
         except Exception as e:
             print(f"\n❌ 项目经理任务失败: {e}")
             import traceback

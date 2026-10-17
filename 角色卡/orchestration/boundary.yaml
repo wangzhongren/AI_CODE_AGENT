@@ -1,0 +1,44 @@
+role: orchestration
+entries:
+  - kind: file
+    path: myagent/system_manager_agent.py
+    purpose: 编排：项目状态机、决策分发、变更请求处理、状态报告、状态快照与监听器下发
+  - kind: directory
+    path: common/orchestration/
+    purpose: 本角色私有辅助代码
+  - kind: directory
+    path: test/orchestration/
+    purpose: 单元与层内契约测试；不含生产代码
+  - kind: directory
+    path: temp/orchestration/
+    purpose: 未通过/返工产物暂存，供审核对照
+  - kind: file
+    path: 角色卡/orchestration/feature-map.md
+    purpose: 自有系统功能导航
+  - kind: file
+    path: 角色卡/orchestration/memo.md
+    purpose: 续接线索（简短、带日期与来源）
+  - kind: file
+    path: 角色卡/orchestration/changelog.md
+    purpose: 变更历史
+  - kind: file
+    path: 角色卡/orchestration/functional-description.md
+    purpose: 模块说明与代码位置
+  - kind: file
+    path: 角色卡/orchestration/api-spec.md
+    purpose: 导出、依赖、契约符合性、测试证据
+  - kind: directory
+    path: 角色卡/orchestration/docs/
+    purpose: 本角色设计/变更/修复历史
+  - kind: directory
+    path: 角色卡/orchestration/docs/feature/
+    purpose: 稳定功能说明、流程图与历史链接
+  - kind: directory
+    path: 角色卡/orchestration/docs/design/
+    purpose: 设计记录
+  - kind: directory
+    path: 角色卡/orchestration/docs/change/
+    purpose: 变更记录
+  - kind: directory
+    path: 角色卡/orchestration/docs/fix/
+    purpose: 修复记录
